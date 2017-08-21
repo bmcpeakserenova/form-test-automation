@@ -24,7 +24,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.SessionId;
 
 import com.serenova.Page.FormElements;
-import com.serenova.Page.G2FormElements;
+import com.serenova.Page.FormValues;
 import com.serenova.utils.Mailer;
 import com.serenova.utils.ProcessStatus;
 import com.serenova.utils.Utils;
@@ -60,20 +60,20 @@ public class SerenovaScript {
 		// fill form
 
 		// insert firstname
-		FormElements.getObjFirstNameTextBox(driver).sendKeys("BTEST");
+		FormElements.getObjFirstNameTextBox(driver).sendKeys(FormValues.firstName);
 
 		// insert last name
 		String lastname = (page + "_" + Utils.getDate());
 		FormElements.getObjLastNameTextBox(driver).sendKeys(lastname);
 
 		// insert email
-		FormElements.getObjEmailTextBox(driver).sendKeys(lastname + "@test.co");
+		FormElements.getObjEmailTextBox(driver).sendKeys(lastname + FormValues.emailPostfix);
 		// insert company
-		FormElements.getObjCompanyTextBox(driver).sendKeys("ACCENTURE SERVICES PRIVATE LIMITED");
+		FormElements.getObjCompanyTextBox(driver).sendKeys(FormValues.companyName);
 		Thread.sleep(5000);
 		
 		// insert phone number
-		FormElements.getObjPhoneTextBox(driver).sendKeys("5555555555");
+		FormElements.getObjPhoneTextBox(driver).sendKeys(FormValues.phone);
 
 		// set country
 		FormElements.getObjSelectCountry(driver).click();
@@ -82,7 +82,7 @@ public class SerenovaScript {
 		FormElements.getObjSelectState(driver).click();
 		if (!page.contains("G2")) {
 			// insert of agent
-			FormElements.getObjofAgentTextBox(driver).sendKeys("1");
+			FormElements.getObjofAgentTextBox(driver).sendKeys(FormValues.agent);
 		}
 
 		// press submit
@@ -109,60 +109,6 @@ public class SerenovaScript {
 		driver.quit();
 	}
 
-	public static void executeG2Script(String page, String executeURL, String expectedResultURL) throws InterruptedException, Exception {
-		driver = getDriver(page);
-		SessionId sessionID = ((RemoteWebDriver) driver).getSessionId();
-		
-		// Maximize window
-		driver.manage().window().maximize();
-		System.out.println("Executing URL :" + executeURL);
-		
-		// open page
-		Utils.openPage(executeURL, driver);
-		
-		// switch frame
-		driver.switchTo().frame(FormElements.getObjFormFrame());
-		
-		// fill form
-		
-		// insert firstname
-		G2FormElements.getObjFirstNameTextBox(driver).sendKeys("BTEST");
-		
-		// insert last name
-		String lastname = (page + "_" + Utils.getDate());
-		G2FormElements.getObjLastNameTextBox(driver).sendKeys(lastname);
-		
-		// insert email
-		G2FormElements.getObjEmailTextBox(driver).sendKeys(lastname + "@test.co");
-		
-		// insert company
-		G2FormElements.getObjCompanyTextBox(driver).sendKeys("ACCENTURE SERVICES PRIVATE LIMITED");
-		Thread.sleep(5000);
-		
-		// insert phone number
-		G2FormElements.getObjPhoneTextBox(driver).sendKeys("5555555555");
-		
-		// set country
-		G2FormElements.getObjSelectCountry(driver).click();
-		Thread.sleep(20000);
-		
-		// set city
-		G2FormElements.getObjSelectState(driver).click();
-		
-		// press submit
-		FormElements.getObjSubmitButton(driver).click();
-		Thread.sleep(10000);
-		driver.switchTo().defaultContent();
-		Thread.sleep(10000);
-		String resultURL = driver.getCurrentUrl();
-		if (verifyResultURL(expectedResultURL, resultURL)) {
-			markStatus("passed", "", sessionID);
-		} else {
-			markStatus("failed", "", sessionID);
-		}
-		driver.quit();
-	}
-
 	private static WebDriver getDriver(String page) throws Exception {
 
 		String URL = "https://" + USERNAME + ":" + AUTOMATE_KEY + "@hub-cloud.browserstack.com/wd/hub";
@@ -186,8 +132,15 @@ public class SerenovaScript {
 			proxy = new BrowserMobProxyServer();
 			proxy.start();
 			port = proxy.getPort();
-			String cmd = "BrowserStackLocal.exe --key " + AUTOMATE_KEY
+			String browserstackCmd = "BrowserStackLocal.exe";
+			if(System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0){
+				browserstackCmd = "./BrowserStackLocal";
+			}
+			/*String cmd = "BrowserStackLocal.exe --key " + AUTOMATE_KEY
+					+ " --local-proxy-host localhost --local-proxy-port " + port + " --force-local --force-proxy";*/
+			String cmd = browserstackCmd + " --key " + AUTOMATE_KEY
 					+ " --local-proxy-host localhost --local-proxy-port " + port + " --force-local --force-proxy";
+			
 			System.out.println(cmd);
 			Runtime.getRuntime().exec(cmd);
 			Thread.sleep(10000);
@@ -198,6 +151,7 @@ public class SerenovaScript {
 		}
 		driver = new RemoteWebDriver(new URL(URL), caps);
 		driver.get("https://go.pardot.com/l/311851/2017-04-19/4ltx");
+		Mailer.emailResultMEssage = Mailer.emailResultMEssage + page +" --- ";
 		return driver;
 	}
 
@@ -209,7 +163,7 @@ public class SerenovaScript {
 			Mailer.emailResultMEssage = Mailer.emailResultMEssage + " --- PASS\n";
 			return true;
 		}
-		Mailer.emailResultMEssage = Mailer.emailResultMEssage + " - FAIL\n";
+		Mailer.emailResultMEssage = Mailer.emailResultMEssage + " --- FAIL\n";
 		return false;
 	}
 

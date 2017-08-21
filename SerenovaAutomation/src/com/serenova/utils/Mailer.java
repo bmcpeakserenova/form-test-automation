@@ -17,7 +17,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class Mailer {
-	public static String emailResultMEssage = "EXPECTEDRESULTURL --- RESULTURL --- STATUS\n";
+	public static String emailResultMEssage = "TESTNAME --- EXPECTEDRESULTURL --- RESULTURL --- STATUS\n";
 
 	public static void send(/*
 							 * String from,String password,String to,String
